@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Document</title>
+    </head>
+    <body>
+        {% include 'container_bar.html' %}
+        {% include 'user_info.html' %}
+        <h3>Make purchase</h3>
+        {% block content %} {% if message is not None %}
+        <h5>{{ message }}</h5>
+        {% endif %}
+        <p>{{ product.name }}</p>
+        <p>{{ product.text }}</p>
+        <p> {{ product.cost }}$ per one </p>
+        <form method="post">
+            {% csrf_token %} {{ form }} <br>
+            <input type="submit" value="Make Purchase" />
+        </form><br>
+        <a href="{% url 'product_and_searching' %}">Cancel</a>
+        {% endblock %}
+    </body>
+</html>

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Document</title>
+    </head>
+    <body>
+        {% include 'container_bar.html' %}
+        {% include 'user_info.html' %}
+        {% block content %}
+        <h3>Purchases</h3>
+        <ul>
+            {% for purchase in form %}
+            <li>
+                {{ purchase.product.name }} - {{ purchase.quantity }} - Time:
+                {{ purchase.purchase_time }} - {{ purchase.user.username }}
+            </li>
+                    <a href="{% url 'create_refund' purchase.id %}">Create Refund</a>
+            {% endfor %}
+        </ul>
+        {% endblock %}
+    </body>
+</html>

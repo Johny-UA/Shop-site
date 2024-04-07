@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Document</title>
+    </head>
+    <style></style>
+    <body>
+        {% include 'container_bar.html' %} {% include 'user_info.html' %}
+        {%block content %}
+        <h3>Edit product {{ product.name }}</h3>
+        <p>Name Product: {{ product.name }}</p>
+        <form method="post">
+            {% csrf_token %}
+            <input
+                type="text"
+                id="id_cost"
+                name="cost"
+                value="{{ product.cost }}" />
+            <br />
+            <input
+                type="text"
+                id="id_text"
+                name="text"
+                value="{{ product.text }}" />
+            <br />
+            <input
+                type="text"
+                id="id_quantity"
+                name="quantity"
+                value="{{ product.quantity }}" />
+            <br />
+
+            <input type="submit" value="Edit product" />
+        </form>
+        {% endblock %}
+    </body>
+</html>

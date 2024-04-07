@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+    #container{
+        width: 500px;
+        height: 400px;
+        overflow-y: scroll;
+        overflow-x: hidden;
+    }
+    </style>
+</head>
+<body>
+            {% include 'container_bar.html' %}
+            {% include 'user_info.html' %}
+        {% block content %}
+        <h3>Product List</h3>
+        <form method="get">
+            <input
+                type="text"
+                name="search"
+                id="product_search"
+                placeholder="Search product" />
+            <button type="submit">Search</button>
+        </form>
+        <ul id="container">
+            {% for product in products %}
+            <li>
+                <p>
+                    {{ product.name }} - {{ product.text }}- {{ product.quantity }} - {{product.cost}}$
+                </p>
+
+                <a href="{% url 'make_purchase' product.id %}">Make purchase</a>
+                {% if request.user.is_superuser %}
+                <a href="{% url 'edit_product' product.id %}">Edit product</a>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+        {% if request.user.is_superuser %}
+        <a href="{% url 'create_product' %}">Create product</a>
+        {% endif %}
+        {% endblock %}
+</body>
+</html>

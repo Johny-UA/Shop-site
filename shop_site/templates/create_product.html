@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Create Product</title>
+    </head>
+    <body>
+        {% include 'container_bar.html' %}
+        {% include 'user_info.html' %}
+        {% block content %}
+        <h2>Create Product</h2>
+        <form
+            method="post"
+            action="{% url 'create_product' %}"
+            enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form }}
+            <button type="submit">Save</button>
+        </form>
+        {% endblock %}
+        <a href="{% url 'product_and_searching' %}">Products</a>
+    </body>
+</html>
