@@ -15,7 +15,6 @@
                 Purchase: {{ refunds.purchase.product.name }}<br />
                 Purchase Time: {{ refunds.purchase.purchase_time }}<br />
                 Refunds Time: {{ refunds.refunds_time }}<br />
-                Approved: {% if refunds.approved %}Yes{% else %}No{% endif %}<br />
                 {% if request.user.is_superuser %} {% if not refunds.approved %}
                 <a href="{% url 'approve_refund' refunds.id %}">Approve</a>
                 <br />

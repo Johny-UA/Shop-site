@@ -105,6 +105,8 @@ def approve_refund(request, refund_id):
         product.quantity += purchase.quantity
         product.save()
 
+        refund.delete()
+
     return HttpResponseRedirect(reverse_lazy('refund'))
 
 def reject_refund(request, refund_id):
