@@ -5,25 +5,33 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Document</title>
         <style>
-        #container{
-            width: auto;
-            height: 500px;
-            overflow-y: auto;
-        }
+            #container {
+                width: auto;
+                height: 500px;
+                overflow-y: auto;
+            }
         </style>
     </head>
     <body>
-        {% include 'container_bar.html' %}
-        {% include 'user_info.html' %}
-        {% block content %}
+        {% include 'container_bar.html' %} {% block content %}
         <h3>Purchases</h3>
+        {% for message in messages %}
+        <p>{{ message }}</p>
+        {% endfor %}
         <ul id="container">
             {% for purchase in form %}
             <li>
-                {{ purchase.product.name }} - {{ purchase.quantity }} - Time:
-                {{ purchase.purchase_time }} - {{ purchase.user.username }}
-            </li>
-                    <a href="{% url 'create_refund' purchase.id %}">Create Refund</a>
+                {{ purchase.product.name }} - 
+                {{ purchase.quantity }} - 
+                Time: {{ purchase.purchase_time }} 
+                - {{ purchase.user.username }} 
+                - Is refunded: {% if purchase.purchase_is_returned %} Yes {% else %} No {% endif %} <br />
+                {% if not purchase.purchase_is_returned%}
+                <a href="{% url 'create_refund' purchase.id %}"
+                    >Create Refund</a
+                >
+                {% endif %}
+            </li><br>
             {% endfor %}
         </ul>
         {% endblock %}

@@ -61,7 +61,7 @@ def def_login(request):
          form = AuthenticationForm(request.POST)
          if form.is_valid():
             login(request, form.user)
-            return HttpResponseRedirect('/')
+            return HttpResponseRedirect(reverse_lazy('base'))
    else:
       form = AuthenticationForm()
 
@@ -106,6 +106,8 @@ def approve_refund(request, refund_id):
         product.save()
 
         refund.delete()
+        purchase.purchase_is_returned = True
+        purchase.save()
 
     return HttpResponseRedirect(reverse_lazy('refund'))
 
@@ -137,6 +139,7 @@ def make_purchase(request, product_id):
          if product.quantity >= quantity:
 
             purchase_cost = quantity * product.cost
+
             if wallet.balance >= purchase_cost:
                wallet.balance -= purchase_cost
                product.quantity -= quantity

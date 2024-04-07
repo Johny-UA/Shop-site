@@ -39,6 +39,8 @@ class Purchase(models.Model):
 
    purchase_time = models.DateTimeField(auto_now_add=True)
 
+   purchase_is_returned = models.BooleanField(default=False)
+
    def __str__(self) -> str:
       return f"{self.user.username} - {self.product.name}"
 
