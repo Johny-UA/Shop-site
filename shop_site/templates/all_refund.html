@@ -4,34 +4,26 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Document</title>
-        <style>
-            #container {
-                height: 500px;
-                overflow-y: auto;
-            }
-        </style>
     </head>
     <body>
         {% include 'container_bar.html' %} {% include 'user_info.html' %}
-        {% block content %}
-
-        <h3>Refunds</h3>
-        <div id="container1">
+        {%block content %}
         <ul id="container">
-            {% for refunds in refund %}
+            {% for refunds in all_refund %}
             <li>
                 User: {{ refunds.purchase.user.username }}<br />
                 Purchase: {{ refunds.purchase.product.name }}<br />
                 Purchase Time: {{ refunds.purchase.purchase_time }}<br />
                 Refunds Time: {{ refunds.refunds_time }}<br />
-                Approved: {% if refunds.approved %}Yes{% else %}No{% endif %}
-            </li><br /><br />
+                Approved: {% if refunds.approved %}Yes{% else %}No{% endif %}<br />
+                {% if request.user.is_superuser %} {% if not refunds.approved %}
+                <a href="{% url 'approve_refund' refunds.id %}">Approve</a>
+                <br />
+                <a href="{% url 'reject_refund' refunds.id %}">Reject</a>
+                {% endif %} {% endif %}
+            </li>
             {% endfor %}
         </ul>
-        {% if request.user.is_superuser %}
-        <a href="{% url 'superuser_refund' %}">All Refunds</a>
-        {% endif %}
-        </div>
         {% endblock %}
     </body>
 </html>

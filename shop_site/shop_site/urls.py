@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from myapp.views import register, base, def_login, def_logout, create_product, Product_and_Searching, refund, approve_refund, reject_refund, purchase, make_purchase, create_refund, edit_product
+from myapp.views import register, base, def_login, def_logout, create_product, Product_and_Searching, refund, approve_refund, reject_refund, purchase, make_purchase, create_refund, edit_product, superuser_refund
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -32,5 +32,6 @@ urlpatterns = [
     path('purchases/', purchase, name='purchase'),
     path('product/make_purchase/<int:product_id>', make_purchase, name='make_purchase'),
     path('refunds/create_refund/<int:purchase_id>', create_refund, name='create_refund'),
-    path('product/edit_product/<int:product_id>', edit_product, name='edit_product')
+    path('product/edit_product/<int:product_id>', edit_product, name='edit_product'),
+    path('refunds/superuser_refunds', superuser_refund, name='superuser_refund'),
 ]
