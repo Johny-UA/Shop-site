@@ -4,13 +4,20 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Document</title>
+        <style>
+        #container{
+            width: auto;
+            height: 500px;
+            overflow-y: auto;
+        }
+        </style>
     </head>
     <body>
         {% include 'container_bar.html' %}
         {% include 'user_info.html' %}
         {% block content %}
         <h3>Purchases</h3>
-        <ul>
+        <ul id="container">
             {% for purchase in form %}
             <li>
                 {{ purchase.product.name }} - {{ purchase.quantity }} - Time:

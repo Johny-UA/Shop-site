@@ -81,10 +81,12 @@ def def_logout(request):
 @custom_login_required
 def refund(request):
    if request.user.is_superuser:
-      refund = Refund.objects.all()
-   else:
       refund = Refund.objects.filter(purchase__user=request.user)
-   return render(request, 'refund.html', {'refund': refund})
+      all_refund = Refund.objects.all()
+   else:
+      all_refund = None
+      refund = Refund.objects.filter(purchase__user=request.user)
+   return render(request, 'refund.html', {'refund': refund, 'all_refund' : all_refund})
 
 def approve_refund(request, refund_id):
     refund = get_object_or_404(Refund, pk=refund_id)
