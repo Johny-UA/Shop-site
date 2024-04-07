@@ -33,7 +33,7 @@
             {% endfor %}
         </ul>
         {% if all_refund is not None%}
-        <ul>
+        <ul id="container">
             {% for refunds in all_refund %}
             <li>
                 User: {{ refunds.purchase.user.username }}<br />
