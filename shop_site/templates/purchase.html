@@ -13,7 +13,7 @@
         </style>
     </head>
     <body>
-        {% include 'container_bar.html' %} {% block content %}
+        {% include 'container_bar.html' %}{% include 'user_info.html' %} {% block content %}
         <h3>Purchases</h3>
         {% for message in messages %}
         <p>{{ message }}</p>
