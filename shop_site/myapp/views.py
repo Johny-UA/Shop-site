@@ -5,10 +5,9 @@ from django.contrib.auth import login, logout
 from django.views.generic import ListView
 from myapp.forms import RegistrationForm,AuthenticationForm, ProductForm, PurchaseForm, EditProductForm
 from myapp.models import Product, Refund, Purchase, Wallet
-from myapp.decorators import custom_login_required
 from django.contrib.auth.models import User
 from django.db import transaction
-from django.utils.decorators import method_decorator
+from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
 # Create your views here.
@@ -18,7 +17,6 @@ class Product_and_Searching( ListView):
    template_name = 'product.html'
    context_object_name = 'products'
 
-   @method_decorator(custom_login_required)
    def dispatch(self, *args, **kwargs):
       return super().dispatch(*args, **kwargs)
 
@@ -29,7 +27,7 @@ class Product_and_Searching( ListView):
       else:
          return Product.objects.all()
 
-@custom_login_required
+@login_required
 def create_product(request):
    if request.method == 'POST':
       form = ProductForm(request.POST)
@@ -73,17 +71,17 @@ def base(request):
       wallet = Wallet.objects.get(user=request.user)
    return render(request, 'base.html', {'wallet' : wallet})
 
-@custom_login_required
+@login_required
 def def_logout(request):
    logout(request)
    return HttpResponseRedirect(reverse_lazy('base'))
 
-@custom_login_required
+@login_required
 def refund(request):
    refund = Refund.objects.filter(purchase__user=request.user)
    return render(request, 'refund.html', {'refund': refund})
 
-@custom_login_required
+@login_required
 def superuser_refund(request):
    all_refund = Refund.objects.all()
    return render(request, 'all_refund.html', {'all_refund' : all_refund})
@@ -119,12 +117,12 @@ def reject_refund(request, refund_id):
 
     return HttpResponseRedirect(reverse_lazy('refund'))
 
-@custom_login_required
+@login_required
 def purchase(request):
    form = Purchase.objects.filter(user=request.user)
    return render(request, 'purchase.html', {'form' : form})
 
-@custom_login_required
+@login_required
 @transaction.atomic
 def make_purchase(request, product_id):
    message = None
@@ -159,7 +157,7 @@ def make_purchase(request, product_id):
       form = PurchaseForm()
    return render(request, 'make_purchase.html', {'form' : form,'product' : product , 'message' : message})
 
-@custom_login_required
+@login_required
 def create_refund(request, purchase_id):
    purchase = get_object_or_404(Purchase, pk=purchase_id)
    user_refund=Refund.objects.filter(purchase__user=request.user)
@@ -169,7 +167,7 @@ def create_refund(request, purchase_id):
       messages.warning(request, 'This refund already exist.')
    return HttpResponseRedirect(reverse_lazy('purchase'))
 
-@custom_login_required
+@login_required
 def edit_product(request, product_id):
    product = get_object_or_404(Product, pk=product_id)
    if request.method == 'POST':
