@@ -59,7 +59,25 @@ class ProductForm(forms.ModelForm):
 
 
 class PurchaseForm(forms.Form):
-    quantity = forms.IntegerField(label='Quantity')
+    quantity = forms.IntegerField(min_value=1, label='Quantity')
+    
+    def __init__(self, *args, **kwargs):
+        self.product = kwargs.pop('product')
+        super(PurchaseForm, self).__init__(*args, **kwargs)
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        quantity = cleaned_data.get('quantity')
+        wallet = Wallet.objects.get(user=self.user)
+        
+        if self.product.quantity < quantity:
+            raise forms.ValidationError('There is no such amount of goods.')
+        
+        purchase_cost = quantity * self.product.cost
+        if wallet.balance < purchase_cost:
+            raise forms.ValidationError('There are not enough funds in your wallet.')
+        
+        return cleaned_data
 
 
 class EditProductForm(forms.ModelForm):

@@ -11,7 +11,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
 # Create your views here.
-
+@login_required(login_url=reverse_lazy('login'))
 class Product_and_Searching( ListView):
    model = Product
    template_name = 'product.html'
@@ -27,7 +27,7 @@ class Product_and_Searching( ListView):
       else:
          return Product.objects.all()
 
-@login_required
+@login_required(login_url=reverse_lazy('login'))
 def create_product(request):
    if request.method == 'POST':
       form = ProductForm(request.POST)
@@ -71,7 +71,7 @@ def base(request):
       wallet = Wallet.objects.get(user=request.user)
    return render(request, 'base.html', {'wallet' : wallet})
 
-@login_required
+@login_required(login_url=reverse_lazy('login'))
 def def_logout(request):
    logout(request)
    return HttpResponseRedirect(reverse_lazy('base'))
@@ -81,7 +81,7 @@ def refund(request):
    refund = Refund.objects.filter(purchase__user=request.user)
    return render(request, 'refund.html', {'refund': refund})
 
-@login_required
+@login_required(login_url=reverse_lazy('login'))
 def superuser_refund(request):
    all_refund = Refund.objects.all()
    return render(request, 'all_refund.html', {'all_refund' : all_refund})
@@ -117,47 +117,35 @@ def reject_refund(request, refund_id):
 
     return HttpResponseRedirect(reverse_lazy('refund'))
 
-@login_required
+@login_required(login_url=reverse_lazy('login'))
 def purchase(request):
    form = Purchase.objects.filter(user=request.user)
    return render(request, 'purchase.html', {'form' : form})
 
-@login_required
+@login_required(login_url=reverse_lazy('login'))
 @transaction.atomic
 def make_purchase(request, product_id):
-   message = None
-   product = get_object_or_404(Product, pk=product_id)
-   if request.method == 'POST':
-      form = PurchaseForm(request.POST)
-      if form.is_valid():
+    message = None
+    product = get_object_or_404(Product, pk=product_id)
+    if request.method == 'POST':
+        form = PurchaseForm(request.POST, product=product)
+        if form.is_valid():
+            quantity = form.cleaned_data['quantity']
+            wallet = Wallet.objects.get(user=request.user)
+            
+            wallet.balance -= quantity * product.cost
+            product.quantity -= quantity
+            wallet.save()
+            product.save()
+            
+            Purchase.objects.create(user=request.user, product=product, quantity=quantity)
+            
+            return HttpResponseRedirect(reverse_lazy('product_and_searching'))
+    else:
+        form = PurchaseForm(product=product)
+    return render(request, 'make_purchase.html', {'form': form, 'product': product})
 
-         quantity = form.cleaned_data['quantity']
-         wallet = Wallet.objects.get(user=request.user)
-
-         if product.quantity >= quantity:
-
-            purchase_cost = quantity * product.cost
-
-            if wallet.balance >= purchase_cost:
-               wallet.balance -= purchase_cost
-               product.quantity -= quantity
-
-               wallet.save()
-               product.save()
-
-               Purchase.objects.create(user=request.user ,product=product, quantity=quantity)
-
-               return HttpResponseRedirect(reverse_lazy('product_and_searching'))
-
-            else:
-               message = 'There are not enough funds in your wallet.'
-         else:
-            message = 'There is no such amount of goods.'
-   else:
-      form = PurchaseForm()
-   return render(request, 'make_purchase.html', {'form' : form,'product' : product , 'message' : message})
-
-@login_required
+@login_required(login_url=reverse_lazy('login'))
 def create_refund(request, purchase_id):
    purchase = get_object_or_404(Purchase, pk=purchase_id)
    user_refund=Refund.objects.filter(purchase__user=request.user)
@@ -167,7 +155,7 @@ def create_refund(request, purchase_id):
       messages.warning(request, 'This refund already exist.')
    return HttpResponseRedirect(reverse_lazy('purchase'))
 
-@login_required
+@login_required(login_url=reverse_lazy('login'))
 def edit_product(request, product_id):
    product = get_object_or_404(Product, pk=product_id)
    if request.method == 'POST':
