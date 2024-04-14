@@ -5,13 +5,12 @@ from django.contrib.auth import login, logout
 from django.views.generic import ListView
 from myapp.forms import RegistrationForm,AuthenticationForm, ProductForm, PurchaseForm, EditProductForm
 from myapp.models import Product, Refund, Purchase, Wallet
-from django.contrib.auth.models import User
 from django.db import transaction
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
 # Create your views here.
-@login_required(login_url=reverse_lazy('login'))
+
 class Product_and_Searching( ListView):
    model = Product
    template_name = 'product.html'
@@ -21,6 +20,7 @@ class Product_and_Searching( ListView):
       return super().dispatch(*args, **kwargs)
 
    def get_queryset(self):
+
       query = self.request.GET.get('search')
       if query:
          return Product.objects.filter(name__icontains=query)
@@ -76,7 +76,7 @@ def def_logout(request):
    logout(request)
    return HttpResponseRedirect(reverse_lazy('base'))
 
-@login_required
+@login_required(login_url=reverse_lazy('login'))
 def refund(request):
    refund = Refund.objects.filter(purchase__user=request.user)
    return render(request, 'refund.html', {'refund': refund})
@@ -122,6 +122,7 @@ def purchase(request):
    form = Purchase.objects.filter(user=request.user)
    return render(request, 'purchase.html', {'form' : form})
 
+
 @login_required(login_url=reverse_lazy('login'))
 @transaction.atomic
 def make_purchase(request, product_id):
@@ -144,6 +145,7 @@ def make_purchase(request, product_id):
     else:
         form = PurchaseForm(product=product)
     return render(request, 'make_purchase.html', {'form': form, 'product': product})
+
 
 @login_required(login_url=reverse_lazy('login'))
 def create_refund(request, purchase_id):
