@@ -5,15 +5,17 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Document</title>
     </head>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+    </style>
     <body>
-        {% include 'container_bar.html' %}<br>
+        {% include 'container_bar.html' %}<br />
         <h1>Main Page</h1>
-           {% if request.user.is_authenticated %}
-        <h3>Name: {{ request.user.username }}</h3>
-        {% if wallet is not None %}
-        <h4>Balance: {{ wallet.balance }}</h4>
-        {% else %} {% endif %}
-        <h4></h4>
+        {% if request.user.is_authenticated %}
+        <h4>Balance: {{ wallet.balance }} </h4>
         <a href="{% url 'logout' %}">Logout</a><br />
         <br />
         {% else %}
@@ -21,8 +23,6 @@
         <br />
         <a href="{% url 'login' %}">Sing up</a>
         <br />
-        {% endif %}
-        {% block content %} 
-        {% endblock %}
+        {% endif %} {% block content %} {% endblock %}
     </body>
 </html>

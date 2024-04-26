@@ -12,20 +12,18 @@
         </style>
     </head>
     <body>
-        {% include 'container_bar.html' %} {% include 'user_info.html' %}
-        {%block content %}
+        {% include 'container_bar.html' %} {%block content %}
         <ul id="container">
-            {% for refunds in all_refund %}
+            {% for refund in all_refund %}
             <li>
-                User: {{ refunds.purchase.user.username }}<br />
-                Purchase: {{ refunds.purchase.product.name }}<br />
-                Purchase Time: {{ refunds.purchase.purchase_time }}<br />
-                Refunds Time: {{ refunds.refunds_time }}<br />
-                {% if request.user.is_superuser %} {% if not refunds.approved %}
-                <a href="{% url 'approve_refund' refunds.id %}">Approve</a>
-                <br />
-                <a href="{% url 'reject_refund' refunds.id %}">Reject</a>
-                {% endif %} {% endif %}
+                User: {{ refund.purchase.user.username }}<br />
+                Purchase: {{ refund.purchase.product.name }}<br />
+                Purchase Time: {{ refund.purchase.purchase_time }}<br />
+                Refund Time: {{ refund.refund_time }}<br />
+                {% if request.user.is_superuser and not refund.approved %}
+                <a href="{% url 'approve_refund' refund.id %}">Approve</a><br />
+                <a href="{% url 'reject_refund' refund.id %}">Reject</a>
+                {% endif %}
             </li>
             {% endfor %}
         </ul>

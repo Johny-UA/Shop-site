@@ -1,6 +1,7 @@
 from django.db import models
-from django.utils.translation import gettext as _
 from django.contrib.auth.models import User
+from django.core.validators import MaxValueValidator, MinValueValidator
+
 
 # Create your models here.
 
@@ -29,12 +30,12 @@ class Product(models.Model):
 
 
 class Purchase(models.Model):
-   user = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True)
+   user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
 
    product = models.ForeignKey(Product,
                               on_delete=models.DO_NOTHING)
    
-   quantity = models.IntegerField(default=1)
+   quantity = models.IntegerField(default=1,validators=[MinValueValidator(1)])
 
    purchase_time = models.DateTimeField(auto_now_add=True)
 

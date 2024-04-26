@@ -5,9 +5,14 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Document</title>
     </head>
-    <style></style>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+    </style>
     <body>
-        {% include 'container_bar.html' %} {% include 'user_info.html' %}
+        {% include 'container_bar.html' %}
         {%block content %}
         <h3>Edit product {{ product.name }}</h3>
         <p>Name Product: {{ product.name }}</p>

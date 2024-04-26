@@ -4,14 +4,16 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Document</title>
+        <style>
+                    * {
+                margin: 0;
+                padding: 0;
+            }</style>
     </head>
     <body>
         {% include 'container_bar.html' %}
-        {% include 'user_info.html' %}
         <h3>Make purchase</h3>
-        {% block content %} {% if message is not None %}
-        <h5>{{ message }}</h5>
-        {% endif %}
+        {% block content %}
         <p>{{ product.name }}</p>
         <p>{{ product.text }}</p>
         <p> {{ product.cost }}$ per one </p>

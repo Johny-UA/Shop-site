@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <style>
+                * {
+                margin: 0;
+                padding: 0;
+            }
     #container{
         width: 500px;
         height: 400px;
@@ -14,7 +18,6 @@
 </head>
 <body>
             {% include 'container_bar.html' %}
-            {% include 'user_info.html' %}
         {% block content %}
         <h3>Product List</h3>
         <form method="get">

@@ -1,135 +1,157 @@
-from django.shortcuts import render, get_object_or_404
-from django.http import HttpResponseRedirect
+from django.views.generic import ListView, CreateView
+from django.views.generic.edit import UpdateView, FormView
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
-from django.contrib.auth import login, logout
-from django.views.generic import ListView
-from myapp.forms import RegistrationForm,AuthenticationForm, ProductForm, PurchaseForm, EditProductForm
-from myapp.models import Product, Refund, Purchase, Wallet
-from django.db import transaction
-from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, get_object_or_404
 from django.contrib import messages
+from django.db import transaction
+from django.http import HttpResponseRedirect
+from django.contrib.auth import logout, login
+from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.models import User
+from .forms import ProductForm, RegistrationForm, PurchaseForm, EditProductForm
+from .models import Product, Refund, Wallet, Purchase
+from django.contrib.auth import authenticate, login
 
-# Create your views here.
+class ProductListView(LoginRequiredMixin,ListView):
+    model = Product
+    template_name = 'product.html'
+    context_object_name = 'products'
+    login_url = reverse_lazy('login')
 
-class Product_and_Searching( ListView):
-   model = Product
-   template_name = 'product.html'
-   context_object_name = 'products'
+    def get_queryset(self):
+        query = self.request.GET.get('search')
+        if query:
+            return Product.objects.filter(name__icontains=query)
+        else:
+            return Product.objects.all()
 
-   def dispatch(self, *args, **kwargs):
-      return super().dispatch(*args, **kwargs)
+class CreateProductView(LoginRequiredMixin, CreateView):
+    form_class = ProductForm
+    template_name = 'create_product.html'
+    success_url = reverse_lazy('product_and_searching')
+    login_url = reverse_lazy('login')
 
-   def get_queryset(self):
+    def form_valid(self, form):
+        form.save()
+        return super().form_valid(form)
 
-      query = self.request.GET.get('search')
-      if query:
-         return Product.objects.filter(name__icontains=query)
-      else:
-         return Product.objects.all()
+class RegisterView(CreateView):
+    form_class = RegistrationForm
+    template_name = 'register.html'
+    success_url = reverse_lazy('base')
 
-@login_required(login_url=reverse_lazy('login'))
-def create_product(request):
-   if request.method == 'POST':
-      form = ProductForm(request.POST)
+    def form_valid(self, form):
+        user = form.save()
+        login(self.request, user)
+        return super().form_valid(form)
 
-      if form.is_valid():
-         form.save()
-         return HttpResponseRedirect(reverse_lazy('product_and_searching'))
-      
-   else:
-      form = ProductForm()
+class LoginView(FormView):
+    form_class = AuthenticationForm
+    template_name = 'login.html'
+    success_url = reverse_lazy('base')
 
-   return render(request, 'create_product.html', {'form': form})
+    def form_valid(self, form):
+        username = form.cleaned_data.get('username')
+        password = form.cleaned_data.get('password')
+        user = authenticate(username=username, password=password)
+        if user is not None:
+            login(self.request, user)
+            return super().form_valid(form)
+        else:
+            return HttpResponseRedirect(reverse_lazy('login'))
+
+class BaseView(ListView):
+    template_name = 'base.html'
+    context_object_name = 'wallet'
+
+    def get_queryset(self):
+        if self.request.user.is_authenticated:
+            return Wallet.objects.filter(user=self.request.user)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['wallet'] = self.get_queryset().first()
+        return context
+
+class LogoutView(LoginRequiredMixin, CreateView):
+
+    def get(self, request, *args, **kwargs):
+        logout(request)
+        return HttpResponseRedirect(reverse_lazy('base'))
+
+class RefundView(LoginRequiredMixin, ListView):
+    login_url = reverse_lazy('login')
+    template_name = 'refund.html'
+    context_object_name = 'refund'
+
+    def get_queryset(self):
+        return Refund.objects.filter(purchase__user=self.request.user)
+
+class SuperuserRefundView(LoginRequiredMixin, ListView):
+    login_url = reverse_lazy('login')
+    template_name = 'all_refund.html'
+    context_object_name = 'all_refund'
+
+    def get_queryset(self):
+        return Refund.objects.all()
+
+class ApproveRefundView(LoginRequiredMixin, CreateView):
+    login_url = reverse_lazy('login')
+    def get(self, request, refund_id):
+        refund = get_object_or_404(Refund, pk=refund_id)
+
+        if not refund.approved:
+            refund.approved = True
+            refund.save()
+
+            purchase = refund.purchase
+            product = purchase.product
+            user_wallet = Wallet.objects.get(user=purchase.user)
+
+            user_wallet.balance += (purchase.quantity * product.cost)
+            user_wallet.save()
+
+            product.quantity += purchase.quantity
+            product.save()
+
+            refund.delete()
+            purchase.purchase_is_returned = True
+            purchase.save()
+
+        return HttpResponseRedirect(reverse_lazy('refund'))
+
+class RejectRefundView(LoginRequiredMixin, CreateView):
+    login_url = reverse_lazy('login')
+    def get(self, request, refund_id):
+        refund = get_object_or_404(Refund, pk=refund_id)
+
+        if not refund.approved:
+            refund.delete()
+
+        return HttpResponseRedirect(reverse_lazy('refund'))
+
+class PurchaseView(LoginRequiredMixin, ListView):
+    login_url = reverse_lazy('login')
+    template_name = 'purchase.html'
+    context_object_name = 'form'
+
+    def get_queryset(self):
+        return Purchase.objects.filter(user=self.request.user)
 
 
-def register(request):
-    if request.method == 'POST':
-        form = RegistrationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            login(request, user)
-            return HttpResponseRedirect(reverse_lazy('base'))
-    else:
-        form = RegistrationForm()
-    return render(request, 'register.html', {'form': form})
+class MakePurchaseView(LoginRequiredMixin, CreateView):
+    login_url = reverse_lazy('login')
+    form_class = PurchaseForm
+    template_name = 'make_purchase.html'
 
+    @transaction.atomic
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
 
-def def_login(request):
-   if request.method == 'POST':
-         form = AuthenticationForm(request.POST)
-         if form.is_valid():
-            login(request, form.user)
-            return HttpResponseRedirect(reverse_lazy('base'))
-   else:
-      form = AuthenticationForm()
-
-   return render(request, 'login.html', {'form': form})
-
-def base(request):
-   wallet = None
-   if request.user.is_authenticated:
-      wallet = Wallet.objects.get(user=request.user)
-   return render(request, 'base.html', {'wallet' : wallet})
-
-@login_required(login_url=reverse_lazy('login'))
-def def_logout(request):
-   logout(request)
-   return HttpResponseRedirect(reverse_lazy('base'))
-
-@login_required(login_url=reverse_lazy('login'))
-def refund(request):
-   refund = Refund.objects.filter(purchase__user=request.user)
-   return render(request, 'refund.html', {'refund': refund})
-
-@login_required(login_url=reverse_lazy('login'))
-def superuser_refund(request):
-   all_refund = Refund.objects.all()
-   return render(request, 'all_refund.html', {'all_refund' : all_refund})
-
-def approve_refund(request, refund_id):
-    refund = get_object_or_404(Refund, pk=refund_id)
-
-    if refund.approved == False:
-        refund.approved = True
-        refund.save()
-
-        purchase = refund.purchase
-        product = purchase.product
-        user_wallet = Wallet.objects.get(user=purchase.user)
-
-        user_wallet.balance += (purchase.quantity * product.cost)
-        user_wallet.save()
-
-        product.quantity += purchase.quantity
-        product.save()
-
-        refund.delete()
-        purchase.purchase_is_returned = True
-        purchase.save()
-
-    return HttpResponseRedirect(reverse_lazy('refund'))
-
-def reject_refund(request, refund_id):
-    refund = Refund.objects.get(pk=refund_id)
-
-    if not refund.approved:
-        refund.delete()
-
-    return HttpResponseRedirect(reverse_lazy('refund'))
-
-@login_required(login_url=reverse_lazy('login'))
-def purchase(request):
-   form = Purchase.objects.filter(user=request.user)
-   return render(request, 'purchase.html', {'form' : form})
-
-
-@login_required(login_url=reverse_lazy('login'))
-@transaction.atomic
-def make_purchase(request, product_id):
-    message = None
-    product = get_object_or_404(Product, pk=product_id)
-    if request.method == 'POST':
-        form = PurchaseForm(request.POST, product=product)
+    def post(self, request, *args, **kwargs):
+        product = get_object_or_404(Product, pk=kwargs['product_id'])
+        form = self.form_class(request.POST, product=product)
         if form.is_valid():
             quantity = form.cleaned_data['quantity']
             wallet = Wallet.objects.get(user=request.user)
@@ -142,38 +164,34 @@ def make_purchase(request, product_id):
             Purchase.objects.create(user=request.user, product=product, quantity=quantity)
             
             return HttpResponseRedirect(reverse_lazy('product_and_searching'))
-    else:
-        form = PurchaseForm(product=product)
-    return render(request, 'make_purchase.html', {'form': form, 'product': product})
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['product'] = get_object_or_404(Product, pk=self.kwargs['product_id'])
+        return context
 
-@login_required(login_url=reverse_lazy('login'))
-def create_refund(request, purchase_id):
-   purchase = get_object_or_404(Purchase, pk=purchase_id)
-   user_refund=Refund.objects.filter(purchase__user=request.user)
-   if not user_refund.filter(purchase=purchase).exists():
-      Refund.objects.create(purchase=purchase)
-   else:
-      messages.warning(request, 'This refund already exist.')
-   return HttpResponseRedirect(reverse_lazy('purchase'))
+class CreateRefundView(LoginRequiredMixin, CreateView):
+    login_url = reverse_lazy('login')
+    def get(self, request, purchase_id):
+        purchase = get_object_or_404(Purchase, pk=purchase_id)
+        user_refund = Refund.objects.filter(purchase__user=request.user)
+        if not user_refund.filter(purchase=purchase).exists():
+            Refund.objects.create(purchase=purchase)
+        else:
+            messages.warning(request, 'This refund already exist.')
+        return HttpResponseRedirect(reverse_lazy('purchase'))
 
-@login_required(login_url=reverse_lazy('login'))
-def edit_product(request, product_id):
-   product = get_object_or_404(Product, pk=product_id)
-   if request.method == 'POST':
-      form = EditProductForm(request.POST)
-      if form.is_valid():
-         cost = form.cleaned_data['cost']
-         text = form.cleaned_data[ 'text' ]
-         quantity = form.cleaned_data[ 'quantity' ]
+class EditProductView(LoginRequiredMixin, UpdateView):
+    model = Product
+    form_class = EditProductForm
+    template_name = 'edit_product.html'
+    success_url = reverse_lazy('product_and_searching')
+    login_url = reverse_lazy('login')
 
-         product.cost = cost
-         product.text = text
-         product.quantity = quantity
-         product.save()
+    def get_object(self, queryset=None):
+        return get_object_or_404(Product, pk=self.kwargs['product_id'])
 
-         return HttpResponseRedirect(reverse_lazy('product_and_searching'))
-   else:
-      form = EditProductForm()
-   
-   return render(request, 'edit_product.html', {'form': form, 'product' : product})
+    def form_valid(self, form):
+        product = form.save(commit=False)
+        product.save()
+        return super().form_valid(form)

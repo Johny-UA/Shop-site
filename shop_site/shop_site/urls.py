@@ -15,23 +15,24 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
-from myapp.views import register, base, def_login, def_logout, create_product, Product_and_Searching, refund, approve_refund, reject_refund, purchase, make_purchase, create_refund, edit_product, superuser_refund
+from django.urls import path, include
+from myapp.views import RegisterView, BaseView, LoginView, LogoutView, CreateProductView, RefundView, ApproveRefundView, RejectRefundView, PurchaseView, MakePurchaseView, CreateRefundView, EditProductView, SuperuserRefundView, ProductListView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', base, name='base'),
-    path('register/', register, name='register'),
-    path('sign_up/', def_login, name='login'),
-    path('logout/', def_logout, name='logout'),
-    path('product/', Product_and_Searching.as_view(), name='product_and_searching'),
-    path('product/create_product/',create_product, name='create_product'),
-    path('refunds/', refund, name='refund'),
-    path('refunds/<int:refund_id>/approve/', approve_refund, name='approve_refund'),
-    path('refunds/<int:refund_id>/reject/', reject_refund, name='reject_refund'),
-    path('purchases/', purchase, name='purchase'),
-    path('product/make_purchase/<int:product_id>', make_purchase, name='make_purchase'),
-    path('refunds/create_refund/<int:purchase_id>', create_refund, name='create_refund'),
-    path('product/edit_product/<int:product_id>', edit_product, name='edit_product'),
-    path('refunds/superuser_refunds', superuser_refund, name='superuser_refund'),
+    path('', BaseView.as_view(), name='base'),
+    path('register/', RegisterView.as_view(), name='register'),
+    path('sign_up/', LoginView.as_view(), name='login'),
+    path('logout/', LogoutView.as_view(), name='logout'),
+    path('product/', ProductListView.as_view(), name='product_and_searching'),
+    path('product/create_product/', CreateProductView.as_view(), name='create_product'),
+    path('refunds/', RefundView.as_view(), name='refund'),
+    path('refunds/<int:refund_id>/approve/', ApproveRefundView.as_view(), name='approve_refund'),
+    path('refunds/<int:refund_id>/reject/', RejectRefundView.as_view(), name='reject_refund'),
+    path('purchases/', PurchaseView.as_view(), name='purchase'),
+    path('product/make_purchase/<int:product_id>/', MakePurchaseView.as_view(), name='make_purchase'),
+    path('refunds/create_refund/<int:purchase_id>/', CreateRefundView.as_view(), name='create_refund'),
+    path('product/edit_product/<int:product_id>/', EditProductView.as_view(), name='edit_product'),
+    path('refunds/superuser_refunds/', SuperuserRefundView.as_view(), name='superuser_refund'),
+    path('api/', include('myapp.api.urls')),
 ]

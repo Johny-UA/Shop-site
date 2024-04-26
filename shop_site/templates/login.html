@@ -4,10 +4,15 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Document</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+            }
+        </style>
     </head>
     <body>
-        {% include 'container_bar.html' %}
-        {% block content %}
+        {% include 'container_bar.html' %} {% block content %}
         <form method="post" action="{% url 'login' %}">
             {% csrf_token %} {{ form }}
             <input type="submit" value="Sign Up" />
