@@ -15,8 +15,10 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
+from django.conf.urls.static import static
 from django.urls import path, include
 from myapp.views import RegisterView, BaseView, LoginView, LogoutView, CreateProductView, RefundView, ApproveRefundView, RejectRefundView, PurchaseView, MakePurchaseView, CreateRefundView, EditProductView, SuperuserRefundView, ProductListView
+from shop_site import settings
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -36,3 +38,4 @@ urlpatterns = [
     path('refunds/superuser_refunds/', SuperuserRefundView.as_view(), name='superuser_refund'),
     path('api/', include('myapp.api.urls')),
 ]
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

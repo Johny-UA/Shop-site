@@ -6,12 +6,11 @@ from django.shortcuts import render, get_object_or_404
 from django.contrib import messages
 from django.db import transaction
 from django.http import HttpResponseRedirect
-from django.contrib.auth import logout, login
+from django.contrib.auth import logout, login, authenticate
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
 from .forms import ProductForm, RegistrationForm, PurchaseForm, EditProductForm
 from .models import Product, Refund, Wallet, Purchase
-from django.contrib.auth import authenticate, login
 
 class ProductListView(LoginRequiredMixin,ListView):
     model = Product
@@ -71,12 +70,12 @@ class BaseView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['wallet'] = self.get_queryset().first()
+        context['wallet'] = self.get_queryset()
         return context
 
 class LogoutView(LoginRequiredMixin, CreateView):
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request):
         logout(request)
         return HttpResponseRedirect(reverse_lazy('base'))
 
