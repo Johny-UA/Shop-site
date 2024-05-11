@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Document</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+            }
+        </style>
+    </head>
+    <body>
+        {% include 'container_bar.html' %}
+        {%block content %}
+        <h2>Create Product</h2>
+        <form
+            method="post"
+            action="{% url 'create_product' %}"
+            enctype="multipart/form-data">
+            {% csrf_token %} {{ form }}
+            <button type="submit">Save</button>
+        </form>
+        {% endblock %}
+        <a href="{% url 'product_and_searching' %}">Products</a>
+    </body>
+</html>

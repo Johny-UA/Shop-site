@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Document</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+            }
+        </style>
+    </head>
+    <body>
+        {% include 'container_bar.html' %} {%block content %}
+        <ul id="container">
+            {% for refund in all_refund %}
+            <li>
+                User: {{ refund.purchase.user.username }}<br />
+                Purchase: {{ refund.purchase.product.name }}<br />
+                Purchase Time: {{ refund.purchase.purchase_time }}<br />
+                Refund Time: {{ refund.refund_time }}<br />
+                {% if request.user.is_superuser and not refund.approved %}
+                <a href="{% url 'approve_refund' refund.id %}">Approve</a><br />
+                <a href="{% url 'reject_refund' refund.id %}">Reject</a>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+        {% endblock %}
+    </body>
+</html>
